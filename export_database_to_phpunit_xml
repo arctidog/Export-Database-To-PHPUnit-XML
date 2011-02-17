@@ -1,0 +1,100 @@
+#!/usr/local/bin/php
+<?php
+/**
+ * This shell script writes a PHPUnit XML dump of an existing database.
+ *
+ * Type phpunit_schema_dump -h for usage information.
+ *
+ * @author Gabriel Birke <birke at d minus scribe dot de>
+ * @copyright Copyright (c) 2009, Gabriel Birke
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ */
+ 
+/**
+ * Include PEAR CommandLine parser
+ */
+require_once 'Console/CommandLine.php';
+
+function __autoload($className) {
+   $pathParts = explode('_', $className);
+   require_once implode('/', $pathParts) . '.php';
+}
+ 
+$parser = new Console_CommandLine(array(
+    'description' => 'This program produces an XML dump of a database schema '
+        . 'that can be used as an input file for a PHPUnit database testcase.',
+    'version'     => '0.1',
+));
+ 
+$parser->addOption('flat', array(
+   'short_name'  => '-f',
+   'long_name'   => '--flat',
+   'description' => 'produce a flat XML data set',
+   'action'      => 'StoreTrue'
+));
+$parser->addOption('username', array(
+   'short_name'  => '-u',
+   'long_name'   => '--user',
+   'description' => 'user name for database access'
+));
+$parser->addOption('pass', array(
+   'short_name'  => '-p',
+   'long_name'   => '--password',
+   'description' => 'password for database access',
+   'action'      => 'Password'
+));
+$parser->addOption('outputfile', array(
+   'short_name'  => '-o',
+   'long_name'   => '--output',
+   'help_name'   => 'XMLFILE',
+   'description' => 'write xml to XMLFILE'
+));
+$parser->addOption('tables', array(
+   'short_name'  => '-t',
+   'long_name'   => '--tables',
+   'help_name'   => 'TABLES',
+   'description' => 'comma separated list of table names to include'
+));
+ 
+$parser->addArgument('dsn', array(
+    'description' => 'Data Source Name. Must be in quotes if it contains '
+        . 'special chars like ampersand or semicolon!',
+    'help_name'   => 'DSN'
+));
+ 
+ 
+class DBDumper
+{
+    public static function dump($dsn, $user, $password, $output='',
+            $dsClass='PHPUnit_Extensions_Database_DataSet_XmlDataSet') {
+        $pdo = new PDO($dsn, $user, $password);
+        $connection = new PHPUnit_Extensions_Database_DB_DefaultDatabaseConnection($pdo, 'default');
+        $dataSet = $connection->createDataSet();
+        if(!$output)
+            $output = 'php://stdout';
+        call_user_func(array($dsClass, 'write'), $dataSet, $output);
+    }
+}
+ 
+ 
+try {
+    $result  = $parser->parse();
+    $output  = $result->options['outputfile'] ? $result->options['outputfile'] : 'php://stdout';
+    $dsClass = $result->options['flat'] ? 'PHPUnit_Extensions_Database_DataSet_FlatXmlDataSet'
+    $tableNames = $result->options['tables']
+        ? explode(',', $result->options['tables'])
+        : null;
+    DBDumper::dump(
+        $result->args['dsn'],
+        $result->options['username'],
+        $result->options['pass'],
+        $output,
+        $dsClass,
+        $tableNames
+    );
+} catch (Exception $exc) {
+    $parser->displayError($exc->getMessage());
+}
+ 
+ 
+?>
