@@ -3,8 +3,13 @@
 /**
  * This shell script writes a PHPUnit XML dump of an existing database.
  *
- * Type phpunit_schema_dump -h for usage information.
+ * Type export_database_to_phpunit_xml -h for usage information.
+ * 
+ * Modified by Hans-Peter Klett to
+ *    include the autoloader
+ *    support table selection
  *
+ * @author Hans-Peter Klett (hans at hansdude dot com>
  * @author Gabriel Birke <birke at d minus scribe dot de>
  * @copyright Copyright (c) 2009, Gabriel Birke
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
