@@ -1,0 +1,7 @@
+This script was originally written by Gabriel Birke. Thanks! This has been really helpful.
+
+I've added an __autoload function, since it had trouble including files, as well as an option to select only certain tables.
+
+For the original blog post, please see
+http://www.lebenplusplus.de/de/blog/export-your-database-schema-phpunit-database-test-case
+
